@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/><path d='M9 12l2 2 4-4'/></svg>" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content="Passly - Secure authentication with email sign-up, OAuth, encrypted passwords, and database sessions." />
+		<meta name="theme-color" content="#4f46e5" />
+		<meta property="og:title" content="Passly - Secure Authentication" />
+		<meta property="og:description" content="Protect your users with enterprise-grade security. Email sign-up, encrypted passwords, and persistent database sessions." />
+		<meta property="og:type" content="website" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<script>
+			(function() {
+				var t = localStorage.getItem('theme');
+				var isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+				if (isDark) {
+					document.documentElement.classList.add('dark');
+				} else {
+					document.documentElement.classList.remove('dark');
+				}
+			})();
+		</script>
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

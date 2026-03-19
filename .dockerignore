@@ -1,0 +1,4 @@
+node_modules
+.git
+pnpm-debug.log
+.env

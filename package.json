@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
-    "@ai-sdk/openai": "^3.0.41",
     "@auth/core": "^0.41.0",
     "@auth/drizzle-adapter": "^1.7.0",
     "@auth/sveltekit": "^1.7.0",

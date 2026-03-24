@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { invalidateAll } from '$app/navigation';
 	import ChatMessage from '$lib/components/ChatMessage.svelte';
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import ChatSidebar from '$lib/components/ChatSidebar.svelte';
@@ -25,11 +26,11 @@
 	let input = $state('');
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
-	let provider = $state<'openai' | 'gemini'>('gemini');
+	let provider = $state('gemini');
 	let isClearing = $state(false);
 	let chatContainer = $state<HTMLDivElement | undefined>(undefined);
 	let forkTargetId = $state<string | null>(null);
-	let sidebarOpen = $state(false);
+	let sidebarOpen = $state(typeof window !== 'undefined' && window.innerWidth >= 640);
 	let uploadNotice = $state<string | null>(null);
 	let attachedFile = $state<{ name: string; chunkCount: number } | null>(null);
 
@@ -134,6 +135,103 @@
 		navigateSibling(root, nodeId, direction);
 	}
 
+	async function handleRegenerate(assistantMessageId: string) {
+		if (isLoading) return;
+
+		// Find the parent (user message) of this assistant message
+		const userNode = findParent(assistantMessageId, root);
+		if (!userNode || userNode.role !== 'user') return;
+
+		// Capture old assistant's dbId before replacing
+		const oldAssistant = findNode(assistantMessageId, root);
+		const oldDbId = oldAssistant?.dbId || null;
+
+		// Remove the old assistant response
+		if (oldAssistant) {
+			userNode.children = userNode.children.filter((c) => c.id !== assistantMessageId);
+		}
+
+		// Create a new assistant node
+		isLoading = true;
+		error = null;
+		shouldScrollToBottom = true;
+
+		const assistantNode = attachChild(userNode, createNode('assistant', ''));
+		if (oldDbId) assistantNode.dbId = oldDbId;
+
+		try {
+			const path = getActivePath(root);
+			const history = path
+				.filter((n) => n.id !== assistantNode.id)
+				.map((n) => ({ role: n.role, content: n.content }));
+
+			const attachedFileName = path.find((n) => n.attachedFile)?.attachedFile?.name || null;
+
+			const response = await fetch('/api/chat', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ messages: history, attachedFileName })
+			});
+
+			if (!response.ok) {
+				throw new Error(
+					response.status === 401
+						? 'Please sign in to use chat.'
+						: 'Failed to get response. Please try again.'
+				);
+			}
+
+			if (!response.body) throw new Error('No response body');
+
+			const reader = response.body.getReader();
+			const decoder = new TextDecoder();
+
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				assistantNode.content += decoder.decode(value, { stream: true });
+				scrollToBottom();
+			}
+
+			const { cleanContent, citations } = parseCitations(assistantNode.content);
+			assistantNode.content = cleanContent;
+			if (citations.length > 0) {
+				assistantNode.citations = citations;
+			}
+
+			// Update existing DB record or create new one
+			if (currentConversationId && oldDbId) {
+				try {
+					await fetch(`/api/conversations/${currentConversationId}/messages`, {
+						method: 'PUT',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							messageId: oldDbId,
+							content: cleanContent,
+							citations: citations.length > 0 ? citations : null
+						})
+					});
+				} catch {
+					console.error('Failed to update message in DB');
+				}
+			} else if (currentConversationId && userNode.dbId) {
+				const assistantDbId = await saveMessage(
+					currentConversationId,
+					userNode.dbId,
+					'assistant',
+					cleanContent,
+					citations.length > 0 ? citations : undefined
+				);
+				if (assistantDbId) assistantNode.dbId = assistantDbId;
+			}
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Something went wrong';
+			userNode.children = userNode.children.filter((c) => c.id !== assistantNode.id);
+		} finally {
+			isLoading = false;
+		}
+	}
+
 	async function loadConversation(convoId: string) {
 		try {
 			const res = await fetch(`/api/conversations/${convoId}`);
@@ -141,7 +239,7 @@
 			const data = await res.json();
 			root = treeFromMessages(data.messages);
 			currentConversationId = convoId;
-			provider = data.conversation.provider || 'gemini';
+			provider = 'gemini';
 			shouldScrollToBottom = true;
 		} catch (e) {
 			console.error('Failed to load conversation:', e);
@@ -150,11 +248,12 @@
 
 	async function deleteConversation(convoId: string) {
 		try {
-			await fetch(`/api/conversations/${convoId}`, { method: 'DELETE' });
-			conversationList = conversationList.filter((c: { id: string }) => c.id !== convoId);
+			const res = await fetch(`/api/conversations/${convoId}`, { method: 'DELETE' });
+			if (!res.ok) return;
 			if (currentConversationId === convoId) {
 				startNewChat();
 			}
+			await invalidateAll();
 		} catch (e) {
 			console.error('Failed to delete conversation:', e);
 		}
@@ -244,10 +343,7 @@
 				if (res.ok) {
 					const convo = await res.json();
 					currentConversationId = convo.id;
-					conversationList = [
-						{ id: convo.id, title: convo.title, provider, updatedAt: new Date().toISOString(), createdAt: new Date().toISOString() },
-						...conversationList
-					];
+					invalidateAll();
 				}
 			} catch (e) {
 				console.error('Failed to create conversation:', e);
@@ -274,7 +370,7 @@
 			const response = await fetch('/api/chat', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ provider, messages: history, attachedFileName })
+				body: JSON.stringify({ messages: history, attachedFileName })
 			});
 
 			if (!response.ok) {
@@ -331,11 +427,21 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" />
 </svelte:head>
 
-<div class="flex h-[calc(100dvh-4rem)]">
+<div class="relative h-[calc(100dvh-4rem)]">
 
-	<!-- Sidebar -->
+	<!-- Sidebar Overlay Backdrop -->
+	{#if sidebarOpen}
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="absolute inset-0 bg-black/20 dark:bg-black/40 z-30 md:hidden transition-opacity duration-300"
+			onclick={() => (sidebarOpen = false)}
+			onkeydown={() => {}}
+		></div>
+	{/if}
+
+	<!-- Sidebar — overlays the chat area -->
 	<div
-		class="flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden {sidebarOpen ? 'w-72' : 'w-[3.25rem]'}"
+		class="absolute top-0 left-0 h-full z-40 transition-all duration-300 ease-in-out {sidebarOpen ? 'w-72' : 'w-[3.25rem]'}"
 	>
 		<div class="{sidebarOpen ? 'w-72' : 'w-[3.25rem]'} h-full transition-all duration-300 ease-in-out">
 			<ChatSidebar
@@ -344,13 +450,16 @@
 				onselect={loadConversation}
 				onnewchat={startNewChat}
 				ondelete={deleteConversation}
+				onclear={clearChat}
+				userName={user?.name}
+				userImage={user?.image}
 				bind:isOpen={sidebarOpen}
 			/>
 		</div>
 	</div>
 
-	<!-- Main Chat Area -->
-	<div class="flex-1 flex flex-col min-w-0">
+	<!-- Main Chat Area — always full width -->
+	<div class="h-full flex flex-col min-w-0">
 		{#if !user}
 			<div class="flex-1 flex items-center justify-center">
 				<div class="text-center">
@@ -369,7 +478,7 @@
 		{:else}
 		<div class="flex flex-col flex-1 min-h-0">
 			<!-- Chat Header -->
-			<div class="border-b border-gray-200 dark:border-gray-700/50 px-4 sm:px-6 py-3 flex items-center justify-between flex-shrink-0">
+			<div class="border-b border-gray-200 dark:border-gray-700/50 pl-16 pr-4 sm:pr-6 py-3 flex items-center justify-between flex-shrink-0">
 				<div class="flex items-center gap-3">
 					<div class="w-9 h-9 bg-gradient-to-br from-violet-600 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-violet-500/20">
 						<svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -381,30 +490,13 @@
 						<p class="text-xs text-gray-500 dark:text-gray-400">By Passly</p>
 					</div>
 				</div>
-				<div class="flex items-center gap-2">
-					<select
-						bind:value={provider}
-						disabled={isLoading}
-						class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
-					>
-						<option value="openai">GPT-5 Mini</option>
-						<option value="gemini">Gemini 2.5 Flash</option>
-					</select>
-					{#if hasMessages}
-						<button
-							onclick={clearChat}
-							class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-700 transition-all"
-						>
-							Clear
-						</button>
-					{/if}
-				</div>
+				<div class="flex items-center gap-2"></div>
 			</div>
 
 			<!-- Messages Area -->
 			<div
 				bind:this={chatContainer}
-				class="flex-1 overflow-y-auto py-5 space-y-5 {isClearing ? 'chat-clearing' : ''}"
+				class="flex-1 overflow-y-auto py-5 space-y-5 pl-14 {isClearing ? 'chat-clearing' : ''}"
 			>
 				<div class="max-w-4xl mx-auto px-4 sm:px-6">
 					{#if !hasMessages}
@@ -484,6 +576,7 @@
 								userImage={user?.image}
 								messageId={node.id}
 								onedit={handleEditMessage}
+								onregenerate={handleRegenerate}
 								siblingCount={siblingCount}
 								siblingIndex={siblingIndex}
 								onnavigate={(dir) => handleNavigateSibling(node.id, dir)}
@@ -517,7 +610,7 @@
 			</div>
 
 			<!-- Input Area -->
-			<div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700/50 px-4 sm:px-6 py-3">
+			<div class="flex-shrink-0 pl-16 pr-4 sm:pr-6 py-3">
 				<div class="max-w-4xl mx-auto">
 					<ChatInput bind:value={input} onsubmit={handleSubmit} disabled={isLoading} onfileupload={handleFileUpload} {attachedFile} onremovefile={() => (attachedFile = null)} />
 					<p class="text-[11px] text-gray-400 dark:text-gray-500 text-center mt-1.5">

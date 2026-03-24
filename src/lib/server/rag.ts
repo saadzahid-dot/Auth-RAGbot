@@ -14,6 +14,7 @@ export type RetrievedChunk = {
 
 export async function retrieveRelevantChunks(
 	query: string,
+	userId: string,
 	topK = 5,
 	threshold = 0.3
 ): Promise<RetrievedChunk[]> {
@@ -31,7 +32,7 @@ export async function retrieveRelevantChunks(
 			1 - (c.embedding <=> ${vectorStr}::vector) AS similarity
 		FROM chunks c
 		JOIN documents d ON d.id = c.document_id
-		WHERE d.status = 'ready'
+		WHERE d.status = 'ready' AND d.user_id = ${userId}
 		ORDER BY c.embedding <=> ${vectorStr}::vector
 		LIMIT ${topK}
 	`);
@@ -44,6 +45,7 @@ export async function retrieveRelevantChunks(
 export async function retrieveChunksByFilename(
 	query: string,
 	filename: string,
+	userId: string,
 	topK = 5
 ): Promise<RetrievedChunk[]> {
 	const queryEmbedding = await getEmbedding(query);
@@ -60,7 +62,7 @@ export async function retrieveChunksByFilename(
 			1 - (c.embedding <=> ${vectorStr}::vector) AS similarity
 		FROM chunks c
 		JOIN documents d ON d.id = c.document_id
-		WHERE d.status = 'ready' AND d.filename = ${filename}
+		WHERE d.status = 'ready' AND d.filename = ${filename} AND d.user_id = ${userId}
 		ORDER BY c.embedding <=> ${vectorStr}::vector
 		LIMIT ${topK}
 	`);

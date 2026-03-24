@@ -172,19 +172,19 @@
 			<table class="w-full">
 				<thead class="bg-orange-50/50 dark:bg-gray-900/50">
 					<tr>
-						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Users</th>
-						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
-						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Verified</th>
-						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+						<th class="px-4 sm:px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Users</th>
+						<th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">Email</th>
+						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Verified</th>
+						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Status</th>
 						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Joined</th>
-						<th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+						<th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Joined</th>
+						<th class="px-4 sm:px-6 py-4 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
 					{#each filteredUsers as user}
 						<tr class="hover:bg-orange-50/50 dark:hover:bg-gray-700/30 transition-colors group">
-							<td class="px-6 py-4 whitespace-nowrap">
+							<td class="px-4 sm:px-6 py-4 whitespace-nowrap">
 								<div class="flex items-center gap-3">
 									{#if user.image}
 										<img src={user.image} alt="{user.name || 'User'}" class="w-10 h-10 rounded-xl border border-gray-200 dark:border-gray-700" />
@@ -200,7 +200,7 @@
 								</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">{user.email}</td>
-							<td class="px-6 py-4 whitespace-nowrap">
+							<td class="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
 								{#if user.emailVerified}
 									<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
 										<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -213,7 +213,7 @@
 									</span>
 								{/if}
 							</td>
-							<td class="px-6 py-4 whitespace-nowrap">
+							<td class="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
 								{#if user.active}
 									<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
 										<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -239,16 +239,16 @@
 									</span>
 								{/if}
 							</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
 								{user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
 							</td>
-							<td class="px-6 py-4 whitespace-nowrap text-right">
-								<div class="flex items-center justify-end gap-3 opacity-70 group-hover:opacity-100 transition-opacity">
+							<td class="px-4 sm:px-6 py-4 whitespace-nowrap text-right">
+								<div class="flex items-center justify-end gap-1.5 sm:gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
 									<form method="POST" action="?/toggleActive" use:enhance>
 										<input type="hidden" name="userId" value={user.id} />
 										<button
 											type="submit"
-											class="text-xs font-semibold px-3 py-2 rounded-lg border {user.active ? 'border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:border-amber-300 dark:hover:border-amber-700' : 'border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 hover:border-green-300 dark:hover:border-green-700'} transition-all"
+											class="text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border {user.active ? 'border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:border-amber-300 dark:hover:border-amber-700' : 'border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 hover:border-green-300 dark:hover:border-green-700'} transition-all"
 										>
 											{user.active ? 'Disable' : 'Enable'}
 										</button>
@@ -257,7 +257,7 @@
 										<input type="hidden" name="userId" value={user.id} />
 										<button
 											type="submit"
-											class="text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
+											class="text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
 										>
 											{user.role === 'admin' ? 'Demote' : 'Make Admin'}
 										</button>
@@ -274,7 +274,7 @@
 										<input type="hidden" name="userId" value={user.id} />
 										<button
 											type="submit"
-											class="text-xs font-semibold px-3 py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-700 transition-all"
+											class="text-xs font-semibold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-700 transition-all"
 										>
 											Delete
 										</button>

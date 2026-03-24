@@ -459,13 +459,13 @@
 	</div>
 
 	<!-- Main Chat Area — always full width -->
-	<div class="h-full flex flex-col min-w-0">
+	<div class="h-full flex flex-col min-w-0 bg-white/60 dark:bg-gray-950/60">
 		{#if !user}
 			<div class="flex-1 flex items-center justify-center">
 				<div class="text-center">
 					<div class="w-20 h-20 bg-gradient-to-br from-violet-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-violet-500/20">
 						<svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<rect x="3" y="8" width="18" height="12" rx="3" /><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none" /><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none" /><path d="M12 2v4" /><circle cx="12" cy="2" r="1" fill="currentColor" stroke="none" /><path d="M1 14h2M21 14h2" />
+							<line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><circle cx="12" cy="2" r="1.5" fill="currentColor" stroke="none" /><rect x="4" y="6" width="16" height="12" rx="4" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1.5" /><circle cx="9" cy="12" r="2" fill="white" stroke="none" /><circle cx="15" cy="12" r="2" fill="white" stroke="none" /><circle cx="9.5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="15.5" cy="12" r="1" fill="currentColor" stroke="none" /><path d="M9.5 16 Q12 18.5 14.5 16" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none" /><rect x="2" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.5" stroke="none" /><rect x="20" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.5" stroke="none" />
 						</svg>
 					</div>
 					<h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Must login before using Pascal</h2>
@@ -478,11 +478,11 @@
 		{:else}
 		<div class="flex flex-col flex-1 min-h-0">
 			<!-- Chat Header -->
-			<div class="border-b border-gray-200 dark:border-gray-700/50 pl-16 pr-4 sm:pr-6 py-3 flex items-center justify-between flex-shrink-0">
+			<div class="pl-16 pr-4 sm:pr-6 py-3 flex items-center justify-between flex-shrink-0">
 				<div class="flex items-center gap-3">
 					<div class="w-9 h-9 bg-gradient-to-br from-violet-600 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-violet-500/20">
-						<svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<rect x="3" y="8" width="18" height="12" rx="3" /><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none" /><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none" /><path d="M12 2v4" /><circle cx="12" cy="2" r="1" fill="currentColor" stroke="none" /><path d="M1 14h2M21 14h2" />
+						<svg class="w-5 h-5 text-white pascal-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><circle cx="12" cy="2" r="1.5" fill="currentColor" stroke="none" /><rect x="4" y="6" width="16" height="12" rx="4" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1.5" /><circle cx="9" cy="12" r="2" fill="white" stroke="none" /><circle cx="15" cy="12" r="2" fill="white" stroke="none" /><circle class="pascal-eye" cx="9.5" cy="12" r="1" fill="currentColor" stroke="none" /><circle class="pascal-eye" cx="15.5" cy="12" r="1" fill="currentColor" stroke="none" /><path d="M9.5 16 Q12 18.5 14.5 16" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none" /><rect x="2" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.5" stroke="none" /><rect x="20" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.5" stroke="none" />
 						</svg>
 					</div>
 					<div>
@@ -503,8 +503,8 @@
 						<!-- Welcome State -->
 						<div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
 							<div class="w-20 h-20 bg-gradient-to-br from-violet-500 to-blue-600 rounded-2xl flex items-center justify-center mb-5 shadow-xl shadow-violet-500/20">
-								<svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-									<rect x="3" y="8" width="18" height="12" rx="3" /><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none" /><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none" /><path d="M12 2v4" /><circle cx="12" cy="2" r="1" fill="currentColor" stroke="none" /><path d="M1 14h2M21 14h2" />
+								<svg class="w-10 h-10 text-white pascal-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+									<line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><circle cx="12" cy="2" r="1.5" fill="currentColor" stroke="none" /><rect x="4" y="6" width="16" height="12" rx="4" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1.5" /><circle cx="9" cy="12" r="2" fill="white" stroke="none" /><circle cx="15" cy="12" r="2" fill="white" stroke="none" /><circle class="pascal-eye" cx="9.5" cy="12" r="1" fill="currentColor" stroke="none" /><circle class="pascal-eye" cx="15.5" cy="12" r="1" fill="currentColor" stroke="none" /><path d="M9.5 16 Q12 18.5 14.5 16" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none" /><rect x="2" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.5" stroke="none" /><rect x="20" y="10" width="2" height="4" rx="1" fill="currentColor" opacity="0.5" stroke="none" />
 								</svg>
 							</div>
 							<h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -556,7 +556,7 @@
 								<div class="flex items-start gap-2.5 max-w-[75%]">
 									<div class="w-7 h-7 rounded-full bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-violet-500/20 mt-0.5">
 										<svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-											<rect x="3" y="8" width="18" height="12" rx="3" /><circle cx="9" cy="14" r="1.5" fill="currentColor" stroke="none" /><circle cx="15" cy="14" r="1.5" fill="currentColor" stroke="none" /><path d="M12 2v4" /><circle cx="12" cy="2" r="1" fill="currentColor" stroke="none" />
+											<line x1="12" y1="3" x2="12" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><circle cx="12" cy="2" r="1.5" fill="currentColor" stroke="none" /><rect x="4" y="6" width="16" height="12" rx="4" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1.5" /><circle cx="9" cy="12" r="2" fill="white" stroke="none" /><circle cx="15" cy="12" r="2" fill="white" stroke="none" /><circle cx="9.5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="15.5" cy="12" r="1" fill="currentColor" stroke="none" /><path d="M9.5 16 Q12 18.5 14.5 16" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none" />
 										</svg>
 									</div>
 									<div class="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 border border-gray-100 dark:border-gray-700/50">

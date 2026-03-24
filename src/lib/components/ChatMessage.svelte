@@ -10,6 +10,7 @@
 		userName,
 		userImage,
 		onedit,
+		onregenerate,
 		messageId,
 		siblingCount,
 		siblingIndex,
@@ -24,6 +25,7 @@
 		userName?: string | null;
 		userImage?: string | null;
 		onedit?: (messageId: string, content: string) => void;
+		onregenerate?: (messageId: string) => void;
 		messageId?: string;
 		siblingCount?: number;
 		siblingIndex?: number;
@@ -167,7 +169,7 @@
 				</div>
 				<!-- Timestamp + action buttons -->
 				{#if content}
-					<div class="flex justify-end mt-1 {hasSiblings ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-all duration-200">
+					<div class="flex justify-end mt-1 {hasSiblings ? 'opacity-100' : 'sm:opacity-0 sm:group-hover:opacity-100'} transition-all duration-200">
 						<div class="flex items-center gap-0.5">
 							{#if createdAt}
 								<span class="text-[10px] text-gray-400 dark:text-gray-500 mr-1">{formatTime(createdAt)}</span>
@@ -251,11 +253,11 @@
 					</div>
 				{/if}
 
-				<!-- Timestamp + copy button -->
+				<!-- Timestamp + copy + regenerate buttons -->
 				{#if content}
-					<div class="flex justify-start items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+					<div class="flex justify-start items-center gap-1 mt-1 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200">
 						{#if createdAt}
-							<span class="text-[10px] text-gray-400 dark:text-gray-500">{formatTime(createdAt)}</span>
+							<span class="text-[10px] text-gray-400 dark:text-gray-500 mr-1">{formatTime(createdAt)}</span>
 						{/if}
 						<button
 							onclick={copyAll}
@@ -273,6 +275,17 @@
 								</svg>
 							{/if}
 						</button>
+						{#if onregenerate && messageId}
+							<button
+								onclick={() => onregenerate(messageId)}
+								class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-150"
+								title="Regenerate response"
+							>
+								<svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+							</button>
+						{/if}
 					</div>
 				{/if}
 			</div>

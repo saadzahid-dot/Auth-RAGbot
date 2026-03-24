@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 html {
-	overflow-y: scroll;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 * {
@@ -38,6 +39,22 @@ html {
 
 .animate-slide-out {
 	animation: slide-out 0.3s ease-in forwards;
+}
+
+/* Mobile nav menu slide-down */
+@keyframes mobile-menu-in {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-mobile-menu-in {
+	animation: mobile-menu-in 0.2s ease-out;
 }
 
 @keyframes slide-up {

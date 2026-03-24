@@ -1,5 +1,4 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 import { env } from "$env/dynamic/private";
 import type { RequestHandler } from "./$types";
@@ -11,23 +10,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const { messages, provider = "gemini", attachedFileName = null } = await request.json();
+  const { messages, attachedFileName = null } = await request.json();
 
-  let model;
-
-  if (provider === "gemini") {
-    const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (!apiKey)
-      return new Response("Gemini API key not configured", { status: 503 });
-    const google = createGoogleGenerativeAI({ apiKey });
-    model = google("gemini-2.5-flash");
-  } else {
-    const apiKey = env.OPENAI_API_KEY;
-    if (!apiKey)
-      return new Response("OpenAI API key not configured", { status: 503 });
-    const openai = createOpenAI({ apiKey });
-    model = openai("gpt-5-mini-2025-08-07");
-  }
+  const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey)
+    return new Response("Gemini API key not configured", { status: 503 });
+  const google = createGoogleGenerativeAI({ apiKey });
+  const model = google("gemini-2.5-flash");
 
   // RAG: Retrieve relevant context from uploaded documents
   const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === "user");
@@ -44,11 +33,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   if (lastUserMessage) {
     try {
       let relevantChunks;
+      const userId = session.user.id!;
       if (attachedFileName) {
         // File is attached — retrieve from that specific document (no threshold, user explicitly attached it)
-        relevantChunks = await retrieveChunksByFilename(lastUserMessage.content, attachedFileName, 5);
+        relevantChunks = await retrieveChunksByFilename(lastUserMessage.content, attachedFileName, userId, 5);
       } else {
-        relevantChunks = await retrieveRelevantChunks(lastUserMessage.content, 5, 0.3);
+        relevantChunks = await retrieveRelevantChunks(lastUserMessage.content, userId, 5, 0.3);
       }
       if (relevantChunks.length > 0) {
         ragContext = buildContextPrompt(relevantChunks);

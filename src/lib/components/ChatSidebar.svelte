@@ -12,6 +12,9 @@
 		onselect,
 		onnewchat,
 		ondelete,
+		onclear,
+		userName,
+		userImage,
 		isOpen = $bindable(false)
 	} = $props<{
 		conversations: Conversation[];
@@ -19,12 +22,16 @@
 		onselect: (id: string) => void;
 		onnewchat: () => void;
 		ondelete: (id: string) => void;
+		onclear: () => void;
+		userName?: string | null;
+		userImage?: string | null;
 		isOpen: boolean;
 	}>();
 
 	let search = $state('');
 	let confirmDeleteId = $state<string | null>(null);
 	let hoverDeleteId = $state<string | null>(null);
+	let menuOpen = $state(false);
 
 	const filtered = $derived(
 		search
@@ -77,17 +84,17 @@
 	// removed providerIcon text function — using inline SVG icons instead
 </script>
 
-<div class="sidebar-root flex flex-col h-full border-r border-gray-200 dark:border-gray-700/50 overflow-hidden" class:is-open={isOpen}>
+<div class="sidebar-root flex flex-col h-full border-r border-gray-200 dark:border-gray-700/50 overflow-hidden bg-amber-50/40 dark:bg-gray-950" class:is-open={isOpen}>
 	<!-- Toggle button — always visible, fixed size -->
 	<!-- Top controls — always same padding, no layout shift -->
-	<div class="header-controls flex-shrink-0 flex flex-col items-center px-2 pt-2 gap-2">
+	<div class="header-controls flex-shrink-0 flex flex-col items-start px-2 pt-2 gap-2">
 		<button
 			onclick={() => (isOpen = !isOpen)}
-			class="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200"
+			class="toggle-btn w-[2.25rem] h-[2.25rem] flex-shrink-0 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200"
 			title={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
 		>
-			<svg class="w-5 h-5 transition-transform duration-300" class:rotate-180={isOpen} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7" />
+			<svg class="w-[1.125rem] h-[1.125rem] transition-transform duration-300" class:rotate-180={isOpen} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
 			</svg>
 		</button>
 
@@ -110,7 +117,8 @@
 	</div>
 
 	<!-- Expandable content — hidden when collapsed -->
-	<div class="expandable-content flex flex-col flex-1 min-h-0">
+	<div class="expandable-content flex-1 min-h-0">
+	  <div class="expandable-inner flex flex-col min-h-0 h-full">
 		<!-- Search -->
 		<div class="px-3 pb-2">
 			<div class="relative">
@@ -127,6 +135,7 @@
 					<button
 						onclick={() => (search = '')}
 						class="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+						title="Clear search"
 					>
 						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
@@ -149,15 +158,6 @@
 		<div class="flex-1 overflow-y-auto px-2 pb-2 space-y-1 scrollbar-thin">
 			{#if filtered.length === 0}
 				<div class="flex flex-col items-center justify-center py-12 px-4">
-					<div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-						<svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							{#if search}
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-							{:else}
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-							{/if}
-						</svg>
-					</div>
 					<p class="text-xs font-medium text-gray-500 dark:text-gray-400 text-center">
 						{search ? 'No matches found' : 'No conversations yet'}
 					</p>
@@ -177,24 +177,15 @@
 									? 'bg-blue-50 dark:bg-blue-900/20'
 									: 'hover:bg-gray-100 dark:hover:bg-gray-800/60'}"
 							onmouseenter={() => (hoverDeleteId = convo.id)}
-							onmouseleave={() => { hoverDeleteId = null; if (confirmDeleteId === convo.id) confirmDeleteId = null; }}
+							onmouseleave={() => { hoverDeleteId = null; }}
 						>
 							<button
 								onclick={() => onselect(convo.id)}
 								class="flex-1 min-w-0 text-left px-3 py-2.5 rounded-lg transition-all duration-150"
 							>
 								<div class="flex items-center gap-2">
-									<span class="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded
-										{convo.provider === 'openai'
-											? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-											: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}">
-										{#if convo.provider === 'openai'}
-											<!-- OpenAI spark icon -->
-											<svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>
-										{:else}
-											<!-- Gemini icon -->
-											<svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.372 0 0 5.372 0 12c0 2.824.978 5.42 2.613 7.465C4.725 17.296 8.087 16 12 16s7.275 1.296 9.387 3.465A11.943 11.943 0 0 0 24 12c0-6.628-5.372-12-12-12zm0 22c-3.13 0-5.946-1.428-7.8-3.668C6.152 16.9 8.924 16 12 16s5.848.9 7.8 2.332A9.964 9.964 0 0 1 12 22z" opacity="0.3"/><path d="M12 2a10 10 0 0 0-7.743 16.332C6.152 16.9 8.924 16 12 16s5.848.9 7.8 2.332A10 10 0 0 0 12 2z" opacity="0.15"/><path d="M12 0L8.5 8.5 0 12l8.5 3.5L12 24l3.5-8.5L24 12l-8.5-3.5z"/></svg>
-										{/if}
+									<span class="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+										<svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0L8.5 8.5 0 12l8.5 3.5L12 24l3.5-8.5L24 12l-8.5-3.5z"/></svg>
 									</span>
 									<span class="truncate text-sm font-medium
 										{currentId === convo.id
@@ -205,7 +196,7 @@
 								</div>
 							</button>
 
-							<div class="flex-shrink-0 pr-1.5 {hoverDeleteId === convo.id ? 'opacity-100' : 'opacity-0'} transition-opacity duration-150">
+							<div class="flex-shrink-0 pr-1.5 {hoverDeleteId === convo.id || confirmDeleteId === convo.id ? 'opacity-100' : 'opacity-0'} transition-opacity duration-150">
 								<button
 									onclick={(e) => { e.stopPropagation(); handleDelete(convo.id); }}
 									class="w-7 h-7 flex items-center justify-center rounded-md transition-all duration-150
@@ -231,6 +222,83 @@
 			{/each}
 		</div>
 
+	  </div>
+	</div>
+
+	<!-- Bottom menu -->
+	<div class="bottom-menu flex-shrink-0 border-t border-gray-200 dark:border-gray-700/50 px-2 relative flex flex-col items-center justify-center" style="min-height: calc(2.375rem + 1.25rem + 1.25rem + 1.25rem);">
+		<button
+			onclick={() => (menuOpen = !menuOpen)}
+			class="bottom-menu-trigger flex items-center justify-center rounded-lg text-gray-700 dark:text-gray-300 cursor-pointer py-2"
+		>
+			{#if userImage}
+				<img src={userImage} alt="" class="w-[1.75rem] h-[1.75rem] flex-shrink-0 rounded-full object-cover" referrerpolicy="no-referrer" />
+			{:else}
+				<div class="w-[1.75rem] h-[1.75rem] flex-shrink-0 rounded-full bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center text-white text-[11px] font-bold">
+					{userName ? userName[0].toUpperCase() : '?'}
+				</div>
+			{/if}
+			<span class="bottom-menu-label truncate text-sm font-medium ml-2.5">{userName ?? 'User'}</span>
+			<svg class="bottom-menu-label w-4 h-4 ml-auto text-gray-400 transition-transform duration-200" class:rotate-180={menuOpen} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+			</svg>
+		</button>
+
+		{#if menuOpen}
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div class="fixed inset-0 z-40" onclick={() => (menuOpen = false)} onkeydown={() => {}}></div>
+
+			{#if isOpen}
+				<div class="absolute bottom-full left-2 right-2 mb-1 z-50 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg shadow-black/10 dark:shadow-black/30 py-1 animate-menu-in">
+					<button
+						onclick={() => { onclear(); menuOpen = false; }}
+						class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors rounded-lg"
+					>
+						<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+						</svg>
+						Reset conversation
+					</button>
+					<div class="mx-2 my-1 h-px bg-gray-100 dark:bg-gray-700"></div>
+					<form method="POST" action="/logout" class="contents">
+						<button
+							type="submit"
+							class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors rounded-lg"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+							</svg>
+							Log out
+						</button>
+					</form>
+				</div>
+			{:else}
+				<div class="absolute bottom-full left-0 right-0 mb-1 z-50 flex flex-col items-center gap-1 py-1 animate-menu-in">
+					<button
+						onclick={() => { onclear(); menuOpen = false; }}
+						class="group/tip relative w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg shadow-black/10 dark:shadow-black/30 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+						title="Reset conversation"
+					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+						</svg>
+						<span class="absolute left-full ml-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity duration-150">Reset conversation</span>
+					</button>
+					<form method="POST" action="/logout" class="contents">
+						<button
+							type="submit"
+							class="group/tip relative w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg shadow-black/10 dark:shadow-black/30 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+							title="Log out"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+							</svg>
+							<span class="absolute left-full ml-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity duration-150">Log out</span>
+						</button>
+					</form>
+				</div>
+			{/if}
+		{/if}
 	</div>
 </div>
 
@@ -258,20 +326,57 @@
 		display: inline;
 	}
 
-	/* Expandable content */
+	/* Bottom menu — hide labels when collapsed, center avatar */
+	.sidebar-root .bottom-menu-label {
+		display: none;
+	}
+
+	.sidebar-root .bottom-menu-trigger {
+		width: auto;
+	}
+
+	.sidebar-root.is-open .bottom-menu-trigger {
+		width: 100%;
+		justify-content: flex-start;
+	}
+
+	.sidebar-root.is-open .bottom-menu-label {
+		display: block;
+	}
+
+	/* Expandable content — uses grid row trick for smooth open AND close */
 	.sidebar-root .expandable-content {
+		display: grid;
+		grid-template-rows: 0fr;
 		opacity: 0;
-		overflow: hidden;
-		max-height: 0;
-		transition: opacity 0.25s ease, max-height 0.3s ease;
+		visibility: hidden;
+		transition: grid-template-rows 0.3s ease, opacity 0.2s ease, visibility 0s 0.3s;
 		pointer-events: none;
+		overflow: hidden;
+	}
+
+	.sidebar-root .expandable-inner {
+		overflow: hidden;
+		min-height: 0;
 	}
 
 	.sidebar-root.is-open .expandable-content {
+		grid-template-rows: 1fr;
 		opacity: 1;
-		max-height: 100vh;
-		transition: opacity 0.3s ease 0.1s, max-height 0.3s ease;
+		visibility: visible;
+		transition: grid-template-rows 0.3s ease, opacity 0.25s ease 0.05s, visibility 0s;
 		pointer-events: auto;
+	}
+
+
+	/* Menu pop-in animation */
+	@keyframes menu-in {
+		from { opacity: 0; transform: translateY(4px) scale(0.97); }
+		to { opacity: 1; transform: translateY(0) scale(1); }
+	}
+
+	.animate-menu-in {
+		animation: menu-in 0.15s ease-out;
 	}
 
 	/* Rotate the arrow */

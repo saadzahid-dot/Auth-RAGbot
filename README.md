@@ -1,6 +1,6 @@
 # Passly - Full-Stack Authentication System with RAG-Powered AI Chat
 
-A modern, production-ready authentication application built with **SvelteKit 5**, **Tailwind CSS**, **Drizzle ORM**, and **PostgreSQL (pgvector)**. Features a polished blue & orange themed UI with dark mode, role-based access control, complete user management, and **Pascal** — an AI-powered chat assistant using **Vercel AI SDK** with **Google Gemini**, enhanced by **Retrieval-Augmented Generation (RAG)** for document-grounded answers.
+A modern, production-ready authentication application built with **SvelteKit 5**, **Tailwind CSS**, **Drizzle ORM**, and **PostgreSQL (pgvector)**. Features a polished blue & violet themed UI with dark mode, role-based access control, complete user management, and **Pascal** — an AI-powered chat assistant powered by **Google Gemini**, enhanced by **Retrieval-Augmented Generation (RAG)** for document-grounded answers.
 
 ---
 
@@ -58,7 +58,7 @@ A modern, production-ready authentication application built with **SvelteKit 5**
 - **Status tracking** — documents show processing/ready/error status with chunk counts
 
 ### UI/UX
-- **Blue & orange** color theme with dark mode support
+- **Blue & violet** color theme with dark mode support
 - Cream/warm white light mode, deep dark mode
 - Glassmorphism card effects with backdrop blur
 - Smooth animations — slide-up, fade-in, scale-in, float, shimmer

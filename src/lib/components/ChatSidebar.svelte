@@ -84,7 +84,7 @@
 	// removed providerIcon text function — using inline SVG icons instead
 </script>
 
-<div class="sidebar-root flex flex-col h-full border-r border-gray-200 dark:border-gray-700/50 overflow-hidden bg-amber-50/40 dark:bg-gray-950" class:is-open={isOpen}>
+<div class="sidebar-root flex flex-col h-full overflow-hidden bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm" class:is-open={isOpen}>
 	<!-- Toggle button — always visible, fixed size -->
 	<!-- Top controls — always same padding, no layout shift -->
 	<div class="header-controls flex-shrink-0 flex flex-col items-start px-2 pt-2 gap-2">
@@ -226,7 +226,7 @@
 	</div>
 
 	<!-- Bottom menu -->
-	<div class="bottom-menu flex-shrink-0 border-t border-gray-200 dark:border-gray-700/50 px-2 relative flex flex-col items-center justify-center" style="min-height: calc(2.375rem + 1.25rem + 1.25rem + 1.25rem);">
+	<div class="bottom-menu flex-shrink-0 px-2 relative flex flex-col items-start justify-center" style="min-height: calc(2.375rem + 1.25rem + 1.25rem + 1.25rem);">
 		<button
 			onclick={() => (menuOpen = !menuOpen)}
 			class="bottom-menu-trigger flex items-center justify-center rounded-lg text-gray-700 dark:text-gray-300 cursor-pointer py-2"
@@ -332,12 +332,16 @@
 	}
 
 	.sidebar-root .bottom-menu-trigger {
-		width: auto;
+		width: 2.25rem;
+		justify-content: center;
+		transition: none;
 	}
 
 	.sidebar-root.is-open .bottom-menu-trigger {
 		width: 100%;
 		justify-content: flex-start;
+		padding-left: 0.25rem;
+		transition: none;
 	}
 
 	.sidebar-root.is-open .bottom-menu-label {

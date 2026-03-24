@@ -2,6 +2,52 @@
 	import type { PageData } from './$types';
 
 	let { data } = $props<{ data: PageData }>();
+
+	// Typewriter for heading
+	let typedHeading = $state('');
+	let showHeadingCursor = $state(true);
+	let headingDone = $state(false);
+	const headingText = 'Secure Authentication';
+
+	// Typewriter for subtitle
+	let typedSubtitle = $state('');
+	let showSubtitleCursor = $state(false);
+	let subtitleDone = $state(false);
+	const subtitleText = 'Protect your users with enterprise-grade security. Email sign-up, encrypted passwords, and persistent database sessions.';
+
+	$effect(() => {
+		if (!headingDone) {
+			let i = 0;
+			const interval = setInterval(() => {
+				if (i < headingText.length) {
+					typedHeading = headingText.slice(0, i + 1);
+					i++;
+				} else {
+					clearInterval(interval);
+					headingDone = true;
+					setTimeout(() => { showHeadingCursor = false; showSubtitleCursor = true; }, 400);
+				}
+			}, 45);
+			return () => clearInterval(interval);
+		}
+	});
+
+	$effect(() => {
+		if (headingDone && !subtitleDone && showSubtitleCursor) {
+			let i = 0;
+			const interval = setInterval(() => {
+				if (i < subtitleText.length) {
+					typedSubtitle = subtitleText.slice(0, i + 1);
+					i++;
+				} else {
+					clearInterval(interval);
+					subtitleDone = true;
+					setTimeout(() => { showSubtitleCursor = false; }, 800);
+				}
+			}, 20);
+			return () => clearInterval(interval);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -36,16 +82,19 @@
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] text-center py-20">
 
-			<h1 class="animate-slide-up cursor-default text-5xl font-extrabold text-gray-900 dark:text-white sm:text-7xl tracking-tight">
-				Secure <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">Authentication</span>
+			<h1 class="cursor-default text-5xl font-extrabold text-gray-900 dark:text-white sm:text-7xl tracking-tight min-h-[1.2em]">
+				{#if typedHeading.length <= 7}
+					{typedHeading}
+				{:else}
+					{typedHeading.slice(0, 7)}<span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">{typedHeading.slice(7)}</span>
+				{/if}{#if showHeadingCursor}<span class="inline-block w-1 h-[1em] bg-gray-800 dark:bg-white animate-pulse ml-1 align-text-bottom"></span>{/if}
 			</h1>
-			<p class="animate-slide-up-delay-1 cursor-default mt-6 text-xl text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed">
-				Protect your users with enterprise-grade security. Email sign-up, encrypted passwords,
-				and persistent database sessions.
+			<p class="cursor-default mt-6 text-xl text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed min-h-[3.5rem]">
+				{typedSubtitle}{#if showSubtitleCursor}<span class="inline-block w-0.5 h-5 bg-gray-400 dark:bg-gray-500 animate-pulse ml-0.5 align-text-bottom"></span>{/if}
 			</p>
 
 			<!-- Role Selection Cards -->
-			<div class="animate-slide-up-delay-2 mt-12 w-full max-w-2xl">
+			<div class="animate-slide-up-delay-1 mt-12 w-full max-w-2xl">
 				<p class="text-sm text-gray-400 cursor-default dark:text-gray-500 mb-5 uppercase tracking-wider font-semibold">Select any to continue</p>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 					<!-- User Card -->
@@ -91,7 +140,7 @@
 			</div>
 
 			<!-- Feature Cards -->
-			<div class="animate-slide-up-delay-3 mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full">
+			<div class="animate-slide-up-delay-2 mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full">
 				<!-- Card 1 -->
 				<div class="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-indigo-500 dark:hover:border-indigo-900 transition-all hover:-translate-y-1 text-center flex flex-col items-center">
 					<div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 group-hover:scale-110 transition-transform mx-auto">
@@ -128,3 +177,4 @@
 		</div>
 	</div>
 </div>
+

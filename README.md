@@ -1,6 +1,6 @@
 # Passly - Full-Stack Authentication System with RAG-Powered AI Chat
 
-A modern, production-ready authentication application built with **SvelteKit 5**, **Tailwind CSS**, **Drizzle ORM**, and **PostgreSQL (pgvector)**. Features a polished blue & orange themed UI with dark mode, role-based access control, complete user management, and **Pascal** — an AI-powered chat assistant using **Vercel AI SDK** with **Google Gemini**, enhanced by **Retrieval-Augmented Generation (RAG)** for document-grounded answers.
+A modern, production-ready authentication application built with **SvelteKit 5**, **Tailwind CSS**, **Drizzle ORM**, and **PostgreSQL (pgvector)**. Features a polished blue & violet themed UI with dark mode, role-based access control, complete user management, and **Pascal** — an AI-powered chat assistant powered by **Google Gemini**, enhanced by **Retrieval-Augmented Generation (RAG)** for document-grounded answers.
 
 ---
 
@@ -32,14 +32,16 @@ A modern, production-ready authentication application built with **SvelteKit 5**
 - **Secure admin registration** — public registration creates regular users only. Admins can only be created by existing admins.
 
 ### Pascal — AI Chat Assistant
-- **Multi-model support** — Google Gemini 2.5 Flash and OpenAI GPT-5 Mini, switchable per conversation
+- **Google Gemini 2.5 Flash** powered conversational AI
 - Real-time **streaming responses** for instant feedback
+- **Regenerate response** — re-generate any assistant message with one click; the existing DB record is updated in-place
 - **Personalized welcome** — greets users by name with suggested prompts
 - **Conversation persistence** — chats saved to database, accessible across sessions
-- **Conversation sidebar** — search, browse, and delete past conversations
+- **Conversation sidebar** — search, browse, and delete past conversations; collapsed by default on mobile, open on desktop
 - **Conversation branching** — edit and fork past messages without losing history, with left/right arrow navigation between branches
 - **File attachment UX** — uploaded documents appear as a chip above the input area; the chip persists across messages until manually dismissed, and displays inline in each sent message that used it
-- **Copy & Edit** buttons on user messages (icon-only, appear on hover)
+- **Copy, Edit & Regenerate** buttons on messages (always visible on mobile, hover-reveal on desktop)
+- **Separated input controls** — send and attach buttons sit outside the input border for a cleaner look
 - **Markdown rendering** — code blocks with syntax highlighting (highlight.js), tables, lists, and formatted text via `marked` and Tailwind Typography
 - **Prompt engineering** — system prompt ensures properly formatted responses with fenced code blocks, markdown tables, and structured output
 - **Reusable modules** — chat tree logic extracted to `src/lib/chat.ts`; `ChatMessage`, `ChatSidebar`, and `ChatInput` components encapsulate UI
@@ -47,7 +49,7 @@ A modern, production-ready authentication application built with **SvelteKit 5**
 - **Error handling** — user-friendly error messages with dismiss capability
 - **Clear chat** — reset conversation with one click
 - **Protected route** — only authenticated users can access `/chat`
-- **Responsive** — sidebar collapses on mobile with overlay toggle
+- **Responsive** — sidebar overlays the chat area instead of pushing content; collapses on mobile with backdrop dismiss
 
 ### RAG — Document-Grounded Answers
 - **Knowledge Base** — upload `.pdf` and `.txt` documents via drag-and-drop or file picker
@@ -58,11 +60,13 @@ A modern, production-ready authentication application built with **SvelteKit 5**
 - **Status tracking** — documents show processing/ready/error status with chunk counts
 
 ### UI/UX
-- **Blue & orange** color theme with dark mode support
+- **Blue & violet** color theme with orange accents and dark mode support
 - Cream/warm white light mode, deep dark mode
 - Glassmorphism card effects with backdrop blur
 - Smooth animations — slide-up, fade-in, scale-in, float, shimmer
 - Hover lift effects on stat cards with colored shadows
+- **Responsive navbar** — hamburger menu on mobile with slide-down navigation and auth controls
+- **Responsive admin table** — columns progressively hidden on smaller screens (Email, Verified, Status, Joined) to prevent layout distortion
 - Responsive design for mobile, tablet, and desktop
 - Toast notifications for sign-in/sign-out/registration events
 - Loading spinners on all form submissions
@@ -79,7 +83,7 @@ A modern, production-ready authentication application built with **SvelteKit 5**
 | **Database** | PostgreSQL 16 with pgvector extension |
 | **ORM** | Drizzle ORM |
 | **Auth** | Auth.js (@auth/sveltekit) |
-| **AI** | Vercel AI SDK + Google Gemini 2.5 Flash / OpenAI GPT-5 Mini |
+| **AI** | Google Gemini 2.5 Flash (streaming) |
 | **Embeddings** | Python FastAPI microservice (sentence-transformers, all-MiniLM-L6-v2) |
 | **Vector Search** | pgvector (cosine distance) |
 | **PDF Parsing** | pdf-parse |
@@ -211,7 +215,7 @@ A modern, production-ready authentication application built with **SvelteKit 5**
 | `id` | UUID | Primary key |
 | `userId` | text | Foreign key → users |
 | `title` | text | Conversation title |
-| `provider` | text | `gemini` or `openai` |
+| `provider` | text | AI provider (default: `gemini`) |
 | `createdAt` | timestamp | Creation date |
 | `updatedAt` | timestamp | Last update date |
 
@@ -422,6 +426,7 @@ The Retrieval-Augmented Generation pipeline works as follows:
 | `PATCH` | `/api/conversations/[id]` | Update conversation title |
 | `DELETE` | `/api/conversations/[id]` | Delete conversation |
 | `POST` | `/api/conversations/[id]/messages` | Save a message |
+| `PUT` | `/api/conversations/[id]/messages` | Update a message (used by regenerate) |
 | `GET` | `/api/documents` | List user's documents |
 | `POST` | `/api/documents` | Upload and process a document |
 | `GET` | `/api/documents/[id]` | Get document metadata |
